@@ -1,0 +1,7 @@
+{
+  "name": "Chat_Examen",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
