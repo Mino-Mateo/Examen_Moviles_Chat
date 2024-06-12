@@ -1,25 +1,21 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory } from "@ionic/vue-router";
+import { RouteRecordRaw } from "vue-router";
 import HomePage from "../views/HomePage.vue";
-import ChatPage from "../views/ChatPage.vue";
 
-const routes = [
+const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
     redirect: "/home",
   },
   {
     path: "/home",
+    name: "Home",
     component: HomePage,
-  },
-  {
-    path: "/chat",
-    component: ChatPage,
-    meta: { requiresAuth: true },
   },
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.VITE_DATABASEURL),
   routes,
 });
 
