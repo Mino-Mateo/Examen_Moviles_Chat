@@ -20,6 +20,7 @@
         <ion-button @click="handleAuth">{{ isLogin ? 'Login' : 'Register' }}</ion-button>
         <ion-button @click="handleGoogleAuth">Sign in with Google</ion-button>
         <p @click="toggleAuthMode">{{ isLogin ? 'Create an account' : 'Already have an account?' }}</p>
+        <p v-if="errorMessage" style="color: red;">{{ errorMessage }}</p>
       </div>
     </ion-content>
   </ion-page>
@@ -29,30 +30,37 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonButton } from '@ionic/vue';
 import { ref } from 'vue';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
   authDomain: import.meta.env.VITE_AUTH_DOMAIN,
-  databaseurl: import.meta.env.VITE_DATABASEURL,
+  databaseURL: import.meta.env.VITE_DATABASEURL,
   projectId: import.meta.env.VITE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_APP_ID,
-  measurementid: import.meta.env.VITE_MEASUREMENTID,
+  measurementId: import.meta.env.VITE_MEASUREMENTID,
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase if it hasn't been initialized already
+let app;
+if (!getApps().length) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApps()[0];
+}
 const auth = getAuth(app);
 
 const email = ref('');
 const password = ref('');
 const isLogin = ref(true);
+const errorMessage = ref('');
 
 const handleAuth = async () => {
   try {
+    errorMessage.value = '';
     if (isLogin.value) {
       await signInWithEmailAndPassword(auth, email.value, password.value);
       alert('Login successful');
@@ -60,15 +68,20 @@ const handleAuth = async () => {
       await createUserWithEmailAndPassword(auth, email.value, password.value);
       alert('Registration successful');
     }
-  } catch (error) { /* empty */ }
+  } catch (error) {
+    errorMessage.value = (error as Error).message;
+  }
 };
 
 const handleGoogleAuth = async () => {
   try {
+    errorMessage.value = '';
     const provider = new GoogleAuthProvider();
     await signInWithPopup(auth, provider);
     alert('Google sign-in successful');
-  } catch (err) { /* empty */ }
+  } catch (error) {
+    errorMessage.value = (error as Error).message;
+  }
 };
 
 const toggleAuthMode = () => {
