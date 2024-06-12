@@ -20,7 +20,7 @@
 
     <ion-footer>
       <ion-toolbar>
-        <ion-input v-model="newMessage" @keyup.enter="sendMessage" placeholder="Escribe un mensaje"></ion-input>
+        <ion-input v-model="newMessageValue" @keyup.enter="sendMessage" placeholder="Escribe un mensaje"></ion-input>
         <ion-button @click="sendMessage">
           <ion-icon :icon="send"></ion-icon>
         </ion-button>
@@ -32,7 +32,7 @@
 <script setup lang="ts">
 import { IonPage, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonInput, IonButton, IonIcon, IonFooter } from '@ionic/vue';
 import { onMounted, ref } from 'vue';
-import { collection, addDoc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { db } from '@/firebase';
 import { send } from "ionicons/icons";
 import { DocumentData } from 'firebase/firestore';
@@ -41,38 +41,44 @@ import { auth } from '@/main';
 // Referencia a la colección de mensajes
 const messagesCollection = collection(db, 'messages');
 
-// Lista de mensajes
-const messages = ref<DocumentData[]>([]); // Especificamos el tipo DocumentData[]
-const newMessage = ref('');
+// Lista de mensajes ordenados por timestamp o id
+const messages = ref<DocumentData[]>([]);
 
-let currentUser: string | null = null; // Variable para almacenar el ID del usuario actual
+// Usuario actual
+let currentUser: string | null = null;
 
 // Observa el estado de autenticación para obtener el usuario actual
 onMounted(() => {
   auth.onAuthStateChanged(user => {
     if (user) {
-      currentUser = user.uid; // Obtén el ID del usuario actual
+      currentUser = user.uid;
     } else {
-      currentUser = null; // No hay usuario autenticado
+      currentUser = null;
     }
   });
 });
 
-// Obtener mensajes de Firestore en tiempo real
-onSnapshot(messagesCollection, (snapshot) => {
-  messages.value = snapshot.docs.map(doc => doc.data());
+// Obtener mensajes de Firestore en tiempo real y ordenarlos
+onSnapshot(query(messagesCollection, orderBy('timestamp', 'asc')), (snapshot) => {
+  messages.value = snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as DocumentData[];
 });
+
+// Estado de la nueva entrada de mensaje
+const newMessageValue = ref<string>('');
 
 // Función para enviar un nuevo mensaje
 const sendMessage = async () => {
-  if (newMessage.value.trim() !== '') {
+  if (newMessageValue.value.trim() !== '') {
     await addDoc(messagesCollection, {
       sender: currentUser,
-      senderName: auth.currentUser?.displayName || 'Usuario Anónimo', // Nombre del usuario actual
-      text: newMessage.value,
+      senderName: auth.currentUser?.displayName || 'Usuario Anónimo',
+      text: newMessageValue.value,
       timestamp: new Date().toISOString()
     });
-    newMessage.value = ''; // Limpiar el campo de entrada después de enviar el mensaje
+    newMessageValue.value = '';
   }
 };
 
@@ -85,22 +91,22 @@ const getMessageClass = (message: DocumentData) => ({
 
 <style scoped>
 .ion-content {
-  --ion-background-color: #f0f0f0; /* Color de fondo del contenido */
+  --ion-background-color: #f0f0f0;
 }
 
 .ion-item {
-  --inner-padding-end: 16px; /* Espaciado interno en el lado derecho del item */
+  --inner-padding-end: 16px;
 }
 
 .message-sent {
-  background-color: lightblue; /* Estilo del mensaje enviado por el usuario */
+  background-color: lightblue;
 }
 
 .message-received {
-  background-color: white; /* Estilo del mensaje recibido */
+  background-color: white;
 }
 
 .username {
-  font-weight: bold; /* Estilo para resaltar el nombre de usuario */
+  font-weight: bold;
 }
 </style>
