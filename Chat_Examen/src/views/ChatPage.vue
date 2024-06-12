@@ -30,23 +30,27 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { IonPage, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonInput, IonButton, IonIcon, IonFooter } from '@ionic/vue';
-import { ref, computed } from 'vue';
 import { collection, addDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/firebase';
-import { send, location } from "ionicons/icons";
-
+import { send } from "ionicons/icons";
 
 // Referencia a la colección de mensajes
 const messagesCollection = collection(db, 'messages');
 
 // Lista de mensajes
-const messages = ref([]);
+const messages = ref<{ sender: string; text: string }[]>([]);
 const newMessage = ref('');
 
 // Obtener mensajes de Firestore en tiempo real
-onSnapshot(messagesCollection, (snapshot) => {
-  messages.value = snapshot.docs.map(doc => doc.data());
+onMounted(() => {
+  const unsubscribe = onSnapshot(messagesCollection, (snapshot) => {
+    messages.value = snapshot.docs.map(doc => doc.data() as { sender: string; text: string });
+  });
+
+  // Limpiar el listener cuando se destruya el componente
+  onBeforeUnmount(unsubscribe);
 });
 
 // Usuario actual (simulado)
@@ -65,7 +69,7 @@ const sendMessage = async () => {
 };
 
 // Función para determinar la clase del mensaje (receptor/emisor)
-const getMessageClass = (message) => ({
+const getMessageClass = (message: { sender: string }) => ({
   'message-received': message.sender !== uid,
   'message-sent': message.sender === uid
 });
