@@ -4,6 +4,8 @@ import App from "./App.vue";
 import router from "./router";
 import { IonicVue } from "@ionic/vue";
 import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/vue/css/core.css";
@@ -39,6 +41,10 @@ const firebaseConfig = {
 };
 
 export const firebaseApp = initializeApp(firebaseConfig);
+
+// Obtener servicios que vamos a utilizar
+export const db = getFirestore(firebaseApp);
+export const auth = getAuth(firebaseApp);
 
 const app = createApp(App).use(IonicVue).use(router);
 
