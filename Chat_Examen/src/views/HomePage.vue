@@ -20,16 +20,17 @@
         <ion-button @click="handleAuth">{{ isLogin ? 'Login' : 'Register' }}</ion-button>
         <ion-button @click="handleGoogleAuth">Sign in with Google</ion-button>
         <p @click="toggleAuthMode">{{ isLogin ? 'Create an account' : 'Already have an account?' }}</p>
+        <ion-toast :is-open="showToast" :message="toastMessage" duration="2000" position="top"></ion-toast>
       </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonButton } from '@ionic/vue';
 import { ref } from 'vue';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonButton, IonToast } from '@ionic/vue';
 import { initializeApp } from 'firebase/app';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -50,25 +51,43 @@ const auth = getAuth(app);
 const email = ref('');
 const password = ref('');
 const isLogin = ref(true);
+const showToast = ref(false);
+const toastMessage = ref('');
 
 const handleAuth = async () => {
   try {
     if (isLogin.value) {
       await signInWithEmailAndPassword(auth, email.value, password.value);
-      alert('Login successful');
+      toastMessage.value = 'Login successful';
     } else {
       await createUserWithEmailAndPassword(auth, email.value, password.value);
-      alert('Registration successful');
+      toastMessage.value = 'Registration successful';
     }
-  } catch (error) { /* empty */ }
+    showToast.value = true;
+  } catch (error) {
+    if (error instanceof Error) {
+      toastMessage.value = error.message;
+    } else {
+      toastMessage.value = 'An unknown error occurred';
+    }
+    showToast.value = true;
+  }
 };
 
 const handleGoogleAuth = async () => {
   try {
     const provider = new GoogleAuthProvider();
     await signInWithPopup(auth, provider);
-    alert('Google sign-in successful');
-  } catch (err) { /* empty */ }
+    toastMessage.value = 'Google sign-in successful';
+    showToast.value = true;
+  } catch (error) {
+    if (error instanceof Error) {
+      toastMessage.value = error.message;
+    } else {
+      toastMessage.value = 'An unknown error occurred';
+    }
+    showToast.value = true;
+  }
 };
 
 const toggleAuthMode = () => {
