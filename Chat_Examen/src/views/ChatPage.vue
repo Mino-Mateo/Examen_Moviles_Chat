@@ -1,70 +1,90 @@
 <template>
   <ion-page>
-    <ion-header :translucent="true">
+    <ion-header>
       <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-back-button defaultHref="/home"></ion-back-button>
+        </ion-buttons>
         <ion-title>Chat</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content :fullscreen="true">
       <ion-list>
-        <ion-item v-for="(message, index) in messages" :key="index">
-          {{ message.text }}
+        <ion-item v-for="(message, index) in messages" :key="index" :class="getMessageClass(message)">
+          <ion-label v-if="message.sender !== uid">{{ message.sender }}</ion-label>
+          <ion-label>{{ message.text }}</ion-label>
         </ion-item>
       </ion-list>
-
-      <form @submit.prevent="sendMessage">
-        <ion-input v-model="newMessage" placeholder="Escribe tu mensaje"></ion-input>
-        <ion-button type="submit">Enviar</ion-button>
-      </form>
     </ion-content>
+
+    <ion-footer>
+      <ion-toolbar>
+        <ion-input v-model="newMessage" @keyup.enter="sendMessage" placeholder="Escribe un mensaje"></ion-input>
+        <ion-button @click="sendMessage">
+          <ion-icon :icon="send"></ion-icon>
+        </ion-button>
+      </ion-toolbar>
+    </ion-footer>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { getFirestore, collection, addDoc, onSnapshot, DocumentData } from 'firebase/firestore';
+import { IonPage, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonInput, IonButton, IonIcon, IonFooter } from '@ionic/vue';
+import { ref, computed } from 'vue';
+import { collection, addDoc, onSnapshot } from 'firebase/firestore';
+import { db } from '@/firebase';
+import { send, location } from "ionicons/icons";
 
-const db = getFirestore();
-const messages = ref<DocumentData[]>([]);
+
+// Referencia a la colección de mensajes
+const messagesCollection = collection(db, 'messages');
+
+// Lista de mensajes
+const messages = ref([]);
 const newMessage = ref('');
 
-// Escuchar cambios en la colección 'messages'
-onSnapshot(collection(db, 'messages'), (querySnapshot) => {
-  messages.value = [];
-  querySnapshot.forEach((doc) => {
-    messages.value.push(doc.data());
-  });
+// Obtener mensajes de Firestore en tiempo real
+onSnapshot(messagesCollection, (snapshot) => {
+  messages.value = snapshot.docs.map(doc => doc.data());
 });
 
+// Usuario actual (simulado)
+const uid = 'user1'; // Reemplaza esto con la lógica para obtener el ID del usuario actual
+
+// Función para enviar un nuevo mensaje
 const sendMessage = async () => {
-  try {
-    await addDoc(collection(db, 'messages'), {
+  if (newMessage.value.trim() !== '') {
+    await addDoc(messagesCollection, {
+      sender: uid,
       text: newMessage.value,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString()
     });
-    newMessage.value = '';
-  } catch (error) {
-    console.error('Error adding document: ', error);
+    newMessage.value = ''; // Limpiar el campo de entrada después de enviar el mensaje
   }
 };
+
+// Función para determinar la clase del mensaje (receptor/emisor)
+const getMessageClass = (message) => ({
+  'message-received': message.sender !== uid,
+  'message-sent': message.sender === uid
+});
 </script>
 
-
 <style scoped>
-ion-list {
-  padding: 10px;
+.ion-content {
+  --ion-background-color: #f0f0f0; /* Color de fondo del contenido */
 }
 
-form {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
+.ion-item {
+  --inner-padding-end: 16px; /* Espaciado interno en el lado derecho del item */
 }
 
-ion-input {
-  flex: 1;
-  margin-right: 10px;
+.message-sent {
+  background-color: lightblue; /* Estilo del mensaje enviado por el usuario */
+}
+
+.message-received {
+  background-color: white; /* Estilo del mensaje recibido */
 }
 </style>
