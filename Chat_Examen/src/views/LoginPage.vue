@@ -78,8 +78,16 @@ onAuthStateChanged(auth, (user) => {
 const signInWithGoogle = async () => {
   try {
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-    router.push('/chat'); // Redirige a la página de dashboard después del inicio de sesión con Google
+    const { user } = await signInWithPopup(auth, provider);
+
+    if (user) {
+      // Verificar si es la primera vez que el usuario inicia sesión con Google
+      if (user.providerData.length === 1 && user.providerData[0].providerId === 'google.com') {
+        await registerUser(user);
+      }
+
+      router.push('/chat');
+    }
   } catch (error) {
     console.error('Error al iniciar sesión con Google:', error);
     alert('Error al iniciar sesión con Google. Intenta nuevamente.');
