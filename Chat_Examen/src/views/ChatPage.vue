@@ -18,6 +18,9 @@
           <ion-button v-if="message.type === 'pdf'" @click="downloadFile(message.fileUrl)">
             Descargar PDF
           </ion-button>
+          <ion-label v-if="message.type === 'location'">
+            <a :href="message.text" target="_blank">Ver ubicación</a>
+          </ion-label>
         </ion-item>
       </ion-list>
     </ion-content>
@@ -31,11 +34,15 @@
         <ion-button @click="openFileInput">
           Adjuntar Archivo
         </ion-button>
+        <ion-button @click="sendLocation">
+          Enviar Ubicación
+        </ion-button>
         <input type="file" accept="image/jpeg,application/pdf" @change="handleFileUpload" ref="fileInput" style="display: none">
       </ion-toolbar>
     </ion-footer>
   </ion-page>
 </template>
+
 
 
 <script setup lang="ts">
@@ -145,13 +152,32 @@ const downloadFile = (url: string) => {
   document.body.removeChild(link);
 };
 
+// Función para enviar la ubicación actual
+const sendLocation = async () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      const { latitude, longitude } = position.coords;
+      await addDoc(messagesCollection, {
+        sender: currentUser,
+        senderName: auth.currentUser?.displayName || 'Usuario Anónimo',
+        text: `https://www.google.com/maps?q=${latitude},${longitude}`,
+        type: 'location',
+        timestamp: new Date().toISOString()
+      });
+    }, (error) => {
+      alert('Error obteniendo la ubicación: ' + error.message);
+    });
+  } else {
+    alert('La geolocalización no es soportada por este navegador.');
+  }
+};
+
 // Función para determinar la clase del mensaje (receptor/emisor)
 const getMessageClass = (message: DocumentData) => ({
   'message-received': message.sender !== currentUser,
   'message-sent': message.sender === currentUser
 });
 </script>
-
 
 <style scoped>
 .ion-content {
