@@ -1,21 +1,22 @@
 import { createRouter, createWebHistory } from "@ionic/vue-router";
-import { RouteRecordRaw } from "vue-router";
-import HomePage from "../views/HomePage.vue";
+import LoginPage from "@/views/LoginPage.vue";
+import RegisterPage from "@/views/RegisterPage.vue";
 import ChatPage from "@/views/ChatPage.vue";
 
-const routes: Array<RouteRecordRaw> = [
+const routes = [
   {
     path: "/",
-    redirect: "/home",
+    redirect: "/login",
   },
   {
-    path: "/home",
-    name: "Home",
-    component: HomePage,
+    path: "/login",
+    name: "Login",
+    component: LoginPage,
   },
   {
-    path: "/",
-    redirect: "/chat",
+    path: "/register",
+    name: "Register",
+    component: RegisterPage,
   },
   {
     path: "/chat",
@@ -25,7 +26,7 @@ const routes: Array<RouteRecordRaw> = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.VITE_DATABASEURL),
+  history: createWebHistory(),
   routes,
 });
 

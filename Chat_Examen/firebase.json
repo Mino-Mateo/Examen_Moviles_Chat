@@ -12,7 +12,7 @@
     "rewrites": [
       {
         "source": "**",
-        "destination": "/views/HomePage"
+        "destination": "/views/LoginPages.vue"
       }
     ]
   },

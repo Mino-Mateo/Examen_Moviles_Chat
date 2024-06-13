@@ -1,9 +1,9 @@
 import { createApp } from "vue";
-import { VueFire, VueFireAuth } from "vuefire";
+import { IonicVue } from "@ionic/vue";
 import App from "./App.vue";
 import router from "./router";
-import { IonicVue } from "@ionic/vue";
-import { initializeApp } from "firebase/app";
+import { VueFire, VueFireAuth } from "vuefire";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
@@ -23,8 +23,6 @@ import "@ionic/vue/css/text-transformation.css";
 import "@ionic/vue/css/flex-utils.css";
 import "@ionic/vue/css/display.css";
 
-import "@ionic/vue/css/palettes/dark.system.css";
-
 /* Theme variables */
 import "./theme/variables.css";
 
@@ -32,23 +30,30 @@ import "./theme/variables.css";
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
   authDomain: import.meta.env.VITE_AUTH_DOMAIN,
-  databaseurl: import.meta.env.VITE_DATABASEURL,
+  databaseURL: import.meta.env.VITE_DATABASEURL,
   projectId: import.meta.env.VITE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_APP_ID,
-  measurementid: import.meta.env.VITE_MEASUREMENTID,
+  measurementId: import.meta.env.VITE_MEASUREMENTID,
 };
 
-export const firebaseApp = initializeApp(firebaseConfig);
+let firebaseApp;
+if (!getApps().length) {
+  firebaseApp = initializeApp(firebaseConfig);
+} else {
+  firebaseApp = getApp();
+}
 
 // Obtener servicios que vamos a utilizar
 export const db = getFirestore(firebaseApp);
 export const auth = getAuth(firebaseApp);
 
-const app = createApp(App).use(IonicVue).use(router);
+const app = createApp(App);
 
-app.use(IonicVue, router, VueFire, { firebaseApp, modules: [VueFireAuth()] });
+app.use(IonicVue);
+app.use(router);
+app.use(VueFire, { firebaseApp, modules: [VueFireAuth()] });
 
 router.isReady().then(() => {
   app.mount("#app");
