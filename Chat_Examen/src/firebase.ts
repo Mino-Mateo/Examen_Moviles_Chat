@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// Firebase configuration from environment variables
+// Variables de Entorno
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
   authDomain: import.meta.env.VITE_AUTH_DOMAIN,
@@ -15,10 +15,10 @@ const firebaseConfig = {
   measurementid: import.meta.env.VITE_MEASUREMENTID,
 };
 
-// Inicializa Firebase
+// Inicializacion de Firebase
 const app = initializeApp(firebaseConfig);
 
-// Inicializa los servicios de Firebase
+// Inicializacion de servicios de Firebase
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);

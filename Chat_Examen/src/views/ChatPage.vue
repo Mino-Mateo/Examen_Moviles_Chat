@@ -3,7 +3,7 @@
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-back-button defaultHref="/home"></ion-back-button>
+          <ion-back-button defaultHref="/login"></ion-back-button>
         </ion-buttons>
         <ion-title>Chat</ion-title>
       </ion-toolbar>
@@ -37,15 +37,15 @@
         <ion-button @click="sendLocation">
           Enviar Ubicación
         </ion-button>
-        <input type="file" accept="image/jpeg,application/pdf" @change="handleFileUpload" ref="fileInput" style="display: none">
+        <input type="file" accept="image/jpeg,application/pdf" @change="handleFileUpload" ref="fileInput"
+          style="display: none">
       </ion-toolbar>
     </ion-footer>
   </ion-page>
 </template>
 
-
-
 <script setup lang="ts">
+// Importaciones
 import { IonPage, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonInput, IonButton, IonIcon, IonFooter, IonImg } from '@ionic/vue';
 import { onMounted, ref } from 'vue';
 import { collection, addDoc, onSnapshot, orderBy, query } from 'firebase/firestore';
@@ -55,27 +55,16 @@ import { DocumentData } from 'firebase/firestore';
 import { auth } from '@/main';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-// Referencia a la colección de mensajes
 const messagesCollection = collection(db, 'messages');
-
-// Lista de mensajes ordenados por timestamp
 const messages = ref<DocumentData[]>([]);
-
-// Usuario actual
 let currentUser: string | null = null;
 
-// Observa el estado de autenticación para obtener el usuario actual
-onMounted(() => {
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      currentUser = user.uid;
-    } else {
-      currentUser = null;
-    }
-  });
+// Usuario actual
+auth.onAuthStateChanged(user => {
+  currentUser = user ? user.uid : null;
 });
 
-// Obtener mensajes de Firestore en tiempo real y ordenarlos
+// Logica chat
 onSnapshot(query(messagesCollection, orderBy('timestamp', 'asc')), (snapshot) => {
   messages.value = snapshot.docs.map(doc => ({
     id: doc.id,
@@ -83,24 +72,24 @@ onSnapshot(query(messagesCollection, orderBy('timestamp', 'asc')), (snapshot) =>
   })) as DocumentData[];
 });
 
-// Estado de la nueva entrada de mensaje
 const newMessageValue = ref<string>('');
-
-// Estado para el archivo seleccionado
 let selectedFile: File | null = null;
-
-// Referencia al input de archivo
 const fileInput = ref<HTMLInputElement | null>(null);
 
-// Función para enviar un nuevo mensaje
+// Enviar mensaje
 const sendMessage = async () => {
   if (newMessageValue.value.trim() !== '' || selectedFile) {
     let fileUrl = null;
     let fileType = 'text';
 
     if (selectedFile) {
-      fileUrl = await uploadFile(selectedFile);
-      fileType = selectedFile.type.includes('image') ? 'image' : 'pdf';
+      if (selectedFile.type.includes('image')) {
+        fileUrl = await uploadFile(selectedFile, 'images');
+        fileType = 'image';
+      } else if (selectedFile.type === 'application/pdf') {
+        fileUrl = await uploadFile(selectedFile, 'pdf');
+        fileType = 'pdf';
+      }
     }
 
     await addDoc(messagesCollection, {
@@ -117,7 +106,7 @@ const sendMessage = async () => {
   }
 };
 
-// Función para manejar la carga de archivos
+// Subir archivo
 const handleFileUpload = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files.length > 0) {
@@ -130,19 +119,17 @@ const handleFileUpload = (event: Event) => {
   }
 };
 
-// Función para subir el archivo a Firebase Storage
-const uploadFile = async (file: File) => {
-  const fileRef = storageRef(storage, `files/${file.name}`);
+const uploadFile = async (file: File, folder: string) => {
+  const fileRef = storageRef(storage, `${folder}/${file.name}`);
   await uploadBytes(fileRef, file);
   return getDownloadURL(fileRef);
 };
 
-// Función para abrir el input de archivos al hacer clic en el botón
 const openFileInput = () => {
   fileInput.value?.click();
 };
 
-// Función para descargar el archivo PDF
+// Descargar Archivo
 const downloadFile = (url: string) => {
   const link = document.createElement('a');
   link.href = url;
@@ -152,7 +139,7 @@ const downloadFile = (url: string) => {
   document.body.removeChild(link);
 };
 
-// Función para enviar la ubicación actual
+// Enviar Localizacion
 const sendLocation = async () => {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(async (position) => {
@@ -172,10 +159,13 @@ const sendLocation = async () => {
   }
 };
 
-// Función para determinar la clase del mensaje (receptor/emisor)
 const getMessageClass = (message: DocumentData) => ({
   'message-received': message.sender !== currentUser,
   'message-sent': message.sender === currentUser
+});
+
+onMounted(() => {
+  console.log('Componente montado');
 });
 </script>
 

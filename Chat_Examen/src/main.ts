@@ -26,7 +26,7 @@ import "@ionic/vue/css/display.css";
 /* Theme variables */
 import "./theme/variables.css";
 
-// Firebase configuration from environment variables
+// Variables de Entorno
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
   authDomain: import.meta.env.VITE_AUTH_DOMAIN,
@@ -45,7 +45,7 @@ if (!getApps().length) {
   firebaseApp = getApp();
 }
 
-// Obtener servicios que vamos a utilizar
+// Servicios Firebase 
 export const db = getFirestore(firebaseApp);
 export const auth = getAuth(firebaseApp);
 

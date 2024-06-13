@@ -2,13 +2,11 @@
     <ion-page>
         <ion-header>
             <ion-toolbar>
-                <ion-buttons slot="start">
-                    <ion-back-button defaultHref="/login"></ion-back-button>
-                </ion-buttons>
                 <ion-title>Registro</ion-title>
             </ion-toolbar>
         </ion-header>
         <ion-content>
+            <!-- Registro de usuario -->
             <ion-list>
                 <ion-item>
                     <ion-label position="floating">Nombre de Usuario</ion-label>
@@ -27,12 +25,13 @@
         </ion-content>
     </ion-page>
 </template>
-
+<!--Scripts -->
 <script setup>
+// Importaciones
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonInput, IonButton, IonButtons, IonBackButton } from '@ionic/vue';
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonInput, IonButton } from '@ionic/vue';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/firebase';
 
@@ -41,36 +40,31 @@ const username = ref('');
 const email = ref('');
 const password = ref('');
 
+// Registro de usuario
 const register = async () => {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
         const user = userCredential.user;
 
-        // Update user profile
+        // Actualizar nombre en Firebase
         await updateProfile(user, {
             displayName: username.value
         });
 
-        // Save user info to Firestore
+        // Correo de verificacion
+        await sendEmailVerification(user);
+
+        // Guardar en Firebase
         await setDoc(doc(db, 'users', user.uid), {
             username: username.value,
             email: email.value
         });
 
-        alert('Usuario registrado exitosamente');
+        alert('Usuario registrado exitosamente. Se ha enviado un correo de verificación.');
         router.push('/login');
     } catch (error) {
         console.error('Error al registrar usuario:', error);
-        let errorMessage = 'Error al registrar usuario.';
-
-        // Manejo de errores específicos de Firebase
-        if (error.code === 'auth/invalid-email') {
-            errorMessage = 'El formato del correo electrónico es inválido.';
-        } else if (error.code === 'auth/email-already-in-use') {
-            errorMessage = 'El correo electrónico ya está en uso.';
-        } // Puedes agregar más casos según tus necesidades
-
-        alert(errorMessage);
+        alert(`Error al registrar usuario: ${error.message}`);
     }
 };
 </script>

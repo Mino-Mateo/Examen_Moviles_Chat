@@ -6,46 +6,106 @@
       </ion-toolbar>
     </ion-header>
     <ion-content>
+      <!-- Inicio de sesion -->
       <ion-list>
         <ion-item>
-          <ion-label position="floating">Email</ion-label>
-          <ion-input v-model="email" type="email" />
+          <ion-label position="floating">Correo Electrónico</ion-label>
+          <ion-input v-model="email" type="email" required></ion-input>
         </ion-item>
         <ion-item>
-          <ion-label position="floating">Password</ion-label>
-          <ion-input v-model="password" type="password" />
+          <ion-label position="floating">Contraseña</ion-label>
+          <ion-input v-model="password" type="password" required></ion-input>
         </ion-item>
       </ion-list>
-      <ion-button expand="full" @click="login">Login</ion-button>
-      <ion-button expand="full" @click="goToRegister">Register</ion-button>
+      <ion-button expand="full" @click="login">Iniciar Sesión</ion-button>
+
+      <!-- Google -->
+      <ion-button expand="full" color="danger" @click="signInWithGoogle">
+        <ion-icon slot="start"></ion-icon>
+        Iniciar Sesión con Google
+      </ion-button>
+
+      <!-- Registro -->
+      <ion-button expand="full" color="secondary" @click="goToRegisterPage">
+        Ir a Registro
+      </ion-button>
     </ion-content>
   </ion-page>
 </template>
 
-<script setup lang="ts">
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+<!--Scripts -->
+<script setup>
+// Importaciones
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonInput, IonButton } from '@ionic/vue';
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from '@/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
-const email = ref("");
-const password = ref("");
 const router = useRouter();
+const email = ref('');
+const password = ref('');
 
+// Iniciar sesion
 const login = async () => {
-  const auth = getAuth();
   try {
-    await signInWithEmailAndPassword(auth, email.value, password.value);
-    router.push("/chat");
+    const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
+    const user = userCredential.user;
+
+    // Verificar si esta registrado
+    if (user && !user.emailVerified) {
+      await sendEmailVerification(user);
+
+      // Redirigir al la pagina de verificacion del email
+      router.push('/verify-email');
+    } else {
+      router.push('/chat');
+    }
   } catch (error) {
-    console.error("Login error:", error);
-    alert("Failed to login. Please check your credentials and try again.");
+    console.error('Error al iniciar sesión:', error.message);
   }
 };
 
-const goToRegister = () => {
-  router.push("/register");
+// Autenticacion cambio de pantalla
+onAuthStateChanged(auth, (user) => {
+  if (user && user.emailVerified) {
+    router.push('/chat');
+  }
+});
+
+// Inicar con google
+const signInWithGoogle = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+    router.push('/chat'); // Redirige a la página de dashboard después del inicio de sesión con Google
+  } catch (error) {
+    console.error('Error al iniciar sesión con Google:', error);
+    alert('Error al iniciar sesión con Google. Intenta nuevamente.');
+  }
+};
+
+//Cambiar a la pagian del registro
+const goToRegisterPage = () => {
+  router.push('/register');
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+ion-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+ion-content {
+  width: 100%;
+  padding: 16px;
+}
+
+ion-list {
+  width: 100%;
+}
+</style>
