@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -18,3 +19,4 @@ const firebaseApp = initializeApp(firebaseConfig);
 
 // Exporta la instancia de Firestore que vas a usar
 export const db = getFirestore(firebaseApp);
+export const storage = getStorage(firebaseApp);
