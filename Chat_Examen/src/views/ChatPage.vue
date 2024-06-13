@@ -14,7 +14,10 @@
         <ion-item v-for="(message, index) in messages" :key="index" :class="getMessageClass(message)">
           <ion-label v-if="message.sender !== currentUser" class="username">{{ message.senderName }}</ion-label>
           <ion-label v-if="message.type === 'text'">{{ message.text }}</ion-label>
-          <ion-img v-if="message.type === 'image'" :src="message.imageUrl"></ion-img>
+          <ion-img v-if="message.type === 'image'" :src="message.fileUrl"></ion-img>
+          <ion-button v-if="message.type === 'pdf'" @click="downloadFile(message.fileUrl)">
+            Descargar PDF
+          </ion-button>
         </ion-item>
       </ion-list>
     </ion-content>
@@ -26,13 +29,14 @@
           <ion-icon :icon="send"></ion-icon>
         </ion-button>
         <ion-button @click="openFileInput">
-          Adjuntar Imagen
+          Adjuntar Archivo
         </ion-button>
-        <input type="file" accept="image/jpeg" @change="handleFileUpload" ref="fileInput" style="display: none">
+        <input type="file" accept="image/jpeg,application/pdf" @change="handleFileUpload" ref="fileInput" style="display: none">
       </ion-toolbar>
     </ion-footer>
   </ion-page>
 </template>
+
 
 <script setup lang="ts">
 import { IonPage, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonInput, IonButton, IonIcon, IonFooter, IonImg } from '@ionic/vue';
@@ -42,12 +46,12 @@ import { db, storage } from '@/firebase';
 import { send } from "ionicons/icons";
 import { DocumentData } from 'firebase/firestore';
 import { auth } from '@/main';
-import { getDownloadURL, ref as storageRef, uploadBytes } from 'firebase/storage';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 // Referencia a la colección de mensajes
 const messagesCollection = collection(db, 'messages');
 
-// Lista de mensajes ordenados por timestamp o id
+// Lista de mensajes ordenados por timestamp
 const messages = ref<DocumentData[]>([]);
 
 // Usuario actual
@@ -78,20 +82,26 @@ const newMessageValue = ref<string>('');
 // Estado para el archivo seleccionado
 let selectedFile: File | null = null;
 
+// Referencia al input de archivo
+const fileInput = ref<HTMLInputElement | null>(null);
+
 // Función para enviar un nuevo mensaje
 const sendMessage = async () => {
   if (newMessageValue.value.trim() !== '' || selectedFile) {
-    let imageUrl = null;
+    let fileUrl = null;
+    let fileType = 'text';
+
     if (selectedFile) {
-      imageUrl = await uploadImage(selectedFile);
+      fileUrl = await uploadFile(selectedFile);
+      fileType = selectedFile.type.includes('image') ? 'image' : 'pdf';
     }
 
     await addDoc(messagesCollection, {
       sender: currentUser,
       senderName: auth.currentUser?.displayName || 'Usuario Anónimo',
       text: newMessageValue.value,
-      imageUrl: imageUrl,
-      type: selectedFile ? 'image' : 'text',
+      fileUrl: fileUrl,
+      type: fileType,
       timestamp: new Date().toISOString()
     });
 
@@ -100,36 +110,39 @@ const sendMessage = async () => {
   }
 };
 
-// Función para manejar la carga de archivos (imágenes)
+// Función para manejar la carga de archivos
 const handleFileUpload = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files.length > 0) {
     const file = target.files[0];
-    if (file.type === 'image/jpeg' && file.size <= 5 * 1024 * 1024) { // Verificar el tipo y tamaño del archivo
+    if (file.size <= 5 * 1024 * 1024 && (file.type === 'image/jpeg' || file.type === 'application/pdf')) {
       selectedFile = file;
     } else {
-      alert('Por favor, selecciona una imagen JPEG de no más de 5 MB.');
+      alert('El archivo debe ser una imagen JPEG o un PDF y no debe superar los 5 MB.');
     }
   }
 };
 
-// Función para subir la imagen a Firebase Storage
-const uploadImage = async (file: File) => {
-  const imageRef = storageRef(storage, `images/${file.name}`);
-  await uploadBytes(imageRef, file);
-  return await getDownloadURL(imageRef);
+// Función para subir el archivo a Firebase Storage
+const uploadFile = async (file: File) => {
+  const fileRef = storageRef(storage, `files/${file.name}`);
+  await uploadBytes(fileRef, file);
+  return getDownloadURL(fileRef);
 };
 
 // Función para abrir el input de archivos al hacer clic en el botón
 const openFileInput = () => {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/jpeg';
-  input.style.display = 'none';
-  input.onchange = (e) => handleFileUpload(e);
-  document.body.appendChild(input);
-  input.click();
-  document.body.removeChild(input);
+  fileInput.value?.click();
+};
+
+// Función para descargar el archivo PDF
+const downloadFile = (url: string) => {
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'archivo.pdf';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 // Función para determinar la clase del mensaje (receptor/emisor)
@@ -138,6 +151,7 @@ const getMessageClass = (message: DocumentData) => ({
   'message-sent': message.sender === currentUser
 });
 </script>
+
 
 <style scoped>
 .ion-content {
