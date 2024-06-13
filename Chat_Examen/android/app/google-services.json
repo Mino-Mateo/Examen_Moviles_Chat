@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "530988007811",
+    "project_id": "epn-chat",
+    "storage_bucket": "epn-chat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:530988007811:android:165523ace2b17bfc31f6b6",
+        "android_client_info": {
+          "package_name": "com.epn.chat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "530988007811-f4s91jf6dn28k3h35t966dsd9ham2a4u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1390UERGnucYKRARbVVV2RdF92rcyaaA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "530988007811-f4s91jf6dn28k3h35t966dsd9ham2a4u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
