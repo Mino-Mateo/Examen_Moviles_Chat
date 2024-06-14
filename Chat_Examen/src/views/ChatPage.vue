@@ -56,6 +56,7 @@ import { send } from "ionicons/icons";
 import { DocumentData } from 'firebase/firestore';
 import { auth } from '@/main';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Geolocation } from '@capacitor/geolocation';
 
 const messagesCollection = collection(db, 'messages');
 const messages = ref<DocumentData[]>([]);
@@ -196,6 +197,8 @@ const getMessageClass = (message: DocumentData) => ({
 
 // Ubicacion
 onMounted(() => {
+  requestLocationPermission();
+  getCurrentLocation();
   if ('geolocation' in navigator) {
     navigator.permissions
       .query({ name: 'geolocation' })
@@ -251,6 +254,18 @@ const getCurrentLocation = () => {
     }
   );
 };
+
+const requestLocationPermission = async () => {
+  try {
+    const hasPermission = await Geolocation.checkPermissions();
+    if (hasPermission.location !== 'granted') {
+      await Geolocation.requestPermissions();
+    }
+  } catch (error) {
+    console.error('Error al solicitar permisos de localización:', error);
+  }
+};
+
 </script>
 
 <style scoped>
