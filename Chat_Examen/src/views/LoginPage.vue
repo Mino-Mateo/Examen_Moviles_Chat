@@ -33,15 +33,15 @@
   </ion-page>
 </template>
 
-<!--Scripts -->
 <script setup>
 // Importaciones
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
 import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonInput, IonButton } from '@ionic/vue';
 import { auth } from '@/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { Capacitor } from '@capacitor/core';
 
 const router = useRouter();
 const email = ref('');
@@ -78,21 +78,31 @@ onAuthStateChanged(auth, (user) => {
 const signInWithGoogle = async () => {
   try {
     const provider = new GoogleAuthProvider();
-    const { user } = await signInWithPopup(auth, provider);
-
-    if (user) {
-      // Verificar si es la primera vez que el usuario inicia sesión con Google
-      if (user.providerData.length === 1 && user.providerData[0].providerId === 'google.com') {
-        await registerUser(user);
-      }
-
-      router.push('/chat');
+    if (Capacitor.isNativePlatform()) {
+      await signInWithRedirect(auth, provider);
+    } else {
+      await signInWithPopup(auth, provider);
     }
   } catch (error) {
     console.error('Error al iniciar sesión con Google:', error);
     alert('Error al iniciar sesión con Google. Intenta nuevamente.');
   }
 };
+
+// Manejar el resultado de la redirección
+onMounted(async () => {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result) {
+      const user = result.user;
+      console.log('User:', user);
+      router.push('/chat');
+    }
+  } catch (error) {
+    console.error('Error during Google login:', error);
+    alert('Error during Google login: ' + error.message);
+  }
+});
 
 //Cambiar a la pagian del registro
 const goToRegisterPage = () => {
