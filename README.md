@@ -125,7 +125,7 @@ Si quieres probar la aplicación puedes hacerlo desde el siguiente enlace:
 O si quieres probar el proyecto en Moviles puedes hacerlo desde aqui para descargar la APK
 
 ```link
- https://epn-chat.web.app/
+ https://github.com/Mino-Mateo/Examen_Moviles_Chat/releases/tag/APK
 ```
 
 ## 🎥 Video Demostrativo
