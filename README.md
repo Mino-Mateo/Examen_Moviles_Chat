@@ -130,4 +130,4 @@ O si quieres probar el proyecto en Moviles puedes hacerlo desde aqui para descar
 
 ## 🎥 Video Demostrativo
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![Video](./Assets/video_demostrativo.mkv)
