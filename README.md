@@ -130,4 +130,4 @@ O si quieres probar el proyecto en Moviles puedes hacerlo desde aqui para descar
 
 ## 🎥 Video Demostrativo
 
-![Video](./Assets/video_demostrativo.mkv)
+![Video](./Assets/video_demostrativo.mp4)
