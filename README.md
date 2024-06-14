@@ -130,4 +130,4 @@ O si quieres probar el proyecto en Moviles puedes hacerlo desde aqui para descar
 
 ## 🎥 Video Demostrativo
 
-![Video](./Assets/video_demostrativo.mp4)
+https://github.com/Mino-Mateo/Examen_Moviles_Chat/assets/118315392/855443f6-8948-4503-bd05-7c5dd420e7c2
