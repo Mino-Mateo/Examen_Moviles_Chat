@@ -1,8 +1,8 @@
-# 💻🔥 Chat en tiempo real Firebase
+# 💻🔥🌎 Chat Global en tiempo real Firebase
 
-Un Chat en tiempo real realizado en Ionic-Vue, con un Hosting en Firebase.
+Un Chat Global en tiempo real realizado en Ionic-Vue-Firebase, con un aplicativo móvil.
 
-![Logo](/Assets/Logo.png)
+![Logo](./Assets/Logo.png)
 
 ## 📒 Funciones
 
@@ -31,13 +31,13 @@ Vue - Firebase - NPM - Javascript - Typescript - Git - Capacitor
 Clona el proyecto
 
 ```bash
-  git clone https://link-to-project
+  git clone https://github.com/Mino-Mateo/Examen_Moviles_Chat.git
 ```
 
 Ve a la carpeta del proyecto
 
 ```bash
-  cd my-project
+  cd Chat_Examen
 ```
 
 Instala las dependencias
@@ -60,6 +60,12 @@ Recuerda la aplicacion se despliega en con el comando
   ionic serve
 ```
 
+Si quieres que se despliegue en tu servicio de Firebase recuerda crear en la carpeta del proyecto un archivo .env
+
+```bash
+ New-Item .env
+```
+
 Todo esto es necesario para que pueda funcionar correctamente
 
 ## 🍃 Variables de Entorno
@@ -69,7 +75,6 @@ Para ejecutar este proyecto necesitaras dirijirte a archivo .env y colocar tus v
 ```js
 VITE_API_KEY: "API_KEY";
 VITE_AUTH_DOMAIN: "DOMINIO";
-VITE_DATABASEURL: "URL";
 VITE_PROJECT_ID: "ID";
 VITE_STORAGE_BUCKET: "Storage";
 VITE_MESSAGING_SENDER_ID: "ID_Mensaje";
@@ -77,18 +82,52 @@ VITE_APP_ID: "APP_ID";
 VITE_MEASUREMENTID: "ID_Medida";
 ```
 
+Si no sabes donde se encuentran tus variables de entorno dirigete:
+
+```bash
+  https://firebase.google.com/?hl=es-419
+```
+
+Inicia sesion y selecciona tu proyecto
+
+```bash
+ Descripción Genreal > Configuración del proyecto > [Selecciona tu proyecto web]
+```
+
+Y podras ver tus variables de entorno lista para usarse
+![App Screenshot](./Assets/entorno.PNG)
+
 ## 🧩 Uso/Ejemplos
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+### 😀 Login
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![App Screenshot](./Assets/LoginMovil.jpg)
+![App Screenshot](./Assets/LoginWeb.PNG)
+
+### ✍️ Registro
+
+![App Screenshot](./Assets/RegistroMovil.jpg)
+![App Screenshot](./Assets/RegistroWeb.PNG)
+
+### 📲 Chat
+
+![App Screenshot](./Assets/ChatMovil.jpg)
+![App Screenshot](./Assets/ChatWeb.PNG)
 
 ## 🌎 Demo
 
 Si quieres probar la aplicación puedes hacerlo desde el siguiente enlace:
 
-https://chat-examen-b0a2e.web.app/
+```link
+ https://epn-chat.web.app/
+```
 
 O si quieres probar el proyecto en Moviles puedes hacerlo desde aqui para descargar la APK
 
-https://github.com/Mino-Mateo/Examen_Moviles_Chat/releases/tag/apk
+```link
+ https://epn-chat.web.app/
+```
+
+## 🎥 Video Demostrativo
+
+![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
