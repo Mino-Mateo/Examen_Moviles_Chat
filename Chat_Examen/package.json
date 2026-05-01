@@ -34,7 +34,7 @@
     "vuefire": "^3.1.23"
   },
   "devDependencies": {
-    "@capacitor/cli": "6.0.0",
+    "@capacitor/cli": "8.0.2",
     "@types/jest": "^29.5.12",
     "@vitejs/plugin-legacy": "^5.0.0",
     "@vitejs/plugin-vue": "^4.0.0",
